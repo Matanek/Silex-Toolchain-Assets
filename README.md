@@ -28,5 +28,21 @@ packages extracted from them.
 The resulting upload directory is ignored by Git:
 
 ```text
-.release/shadercross-3.0.0-e55cf5e-silex.1/
+.release/shadercross-3.0.0-e55cf5e-silex.2/
 ```
+
+The prepared release also contains:
+
+- `THIRD_PARTY_NOTICES.md`, identifying every redistributed component;
+- `THIRD_PARTY_LICENSES.txt`, containing the corresponding license texts;
+- the exact vkd3d source archive required for the LGPL-covered libraries.
+
+## License
+
+The original scripts and metadata in this repository are licensed under the
+Apache License 2.0 with LLVM Exceptions
+(`Apache-2.0 WITH LLVM-exception`). See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+This license does not cover the upstream binaries published as release assets.
+Those binaries remain subject to the terms recorded in
+[Licenses/README.md](Licenses/README.md).

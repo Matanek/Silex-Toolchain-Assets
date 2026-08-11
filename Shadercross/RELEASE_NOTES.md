@@ -12,3 +12,8 @@ Hosts:
 The packages come from the official SDL Shadercross workflow and include the
 runtime libraries and licenses required by the `shadercross` command. Silex
 verifies the exact asset checksum before installation.
+
+The release also provides `THIRD_PARTY_NOTICES.md` and
+`THIRD_PARTY_LICENSES.txt` beside the binary archives. The unmodified
+`vkd3d-2.0.tar.xz` source archive accompanies the LGPL-covered vkd3d
+libraries distributed in the macOS and Linux packages.

@@ -8,7 +8,7 @@
     "workflow_run": "https://github.com/libsdl-org/SDL_shadercross/actions/runs/28236415347"
   },
   "release": {
-    "tag": "shadercross-3.0.0-e55cf5e-silex.1",
+    "tag": "shadercross-3.0.0-e55cf5e-silex.2",
     "assets": {
       "macos-arm64": {
         "file": "Shadercross-3.0.0-e55cf5e-macos-universal.tar.gz",
@@ -32,5 +32,15 @@
     "SDL3_shadercross-macos-arm64.zip": "8d320666f565bbeb2ae0871856157301c6137dbeb35ec52d481d60f75c0d39c5",
     "SDL3_shadercross-linux-x64.zip": "892981243a72dd52ca72509beebf3b38fbbf16857a61fe9573e05d3428e5748b",
     "SDL3_shadercross-VC-x64.zip": "d5d290630ad9b03210c2cb4cbd2d0698c16feee12b08521d78435343924f5a25"
+  },
+  "compliance": {
+    "notices": "THIRD_PARTY_NOTICES.md",
+    "licenses": "THIRD_PARTY_LICENSES.txt",
+    "correspondingSources": {
+      "vkd3d-2.0.tar.xz": {
+        "url": "https://dl.winehq.org/vkd3d/source/vkd3d-2.0.tar.xz",
+        "sha256": "9ad29bb236808186a47ec66e853b21e6fca59b9dc62a9474b05d5e3eda2710ef"
+      }
+    }
   }
 }
