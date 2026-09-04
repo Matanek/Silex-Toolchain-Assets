@@ -7,6 +7,9 @@ on:
   push:
     branches:
       - spec-desktop-platform-portability-06
+    paths:
+      - .github/workflows/shadercross-linux-arm64.yml
+      - Scripts/build-shadercross-linux-arm64.sh
 
 permissions:
   contents: read
@@ -61,64 +64,14 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y bison ninja-build patchelf
 
-      - name: Configure Shadercross
+      - name: Build, execute, and normalize Shadercross
         shell: bash
-        working-directory: upstream
         run: |
           set -euo pipefail
-          cmake -S . -B build -GNinja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX="$PWD/prefix" \
-            -DCMAKE_PREFIX_PATH="${{ steps.sdl.outputs.prefix }}" \
-            -DSDLSHADERCROSS_CLI=ON \
-            -DSDLSHADERCROSS_CLI_STATIC=OFF \
-            -DSDLSHADERCROSS_DXC=ON \
-            -DSDLSHADERCROSS_INSTALL=ON \
-            -DSDLSHADERCROSS_INSTALL_CPACK=ON \
-            -DSDLSHADERCROSS_INSTALL_RUNTIME=ON \
-            -DSDLSHADERCROSS_SHARED=ON \
-            -DSDLSHADERCROSS_STATIC=ON \
-            -DSDLSHADERCROSS_TESTS=OFF \
-            -DSDLSHADERCROSS_VENDORED=ON
-
-      - name: Build and install Shadercross
-        shell: bash
-        working-directory: upstream
-        run: |
-          set -euo pipefail
-          cmake --build build --config Release --parallel 4
-          cmake --install build --config Release
-          cmake --build build --target package --config Release
-
-      - name: Execute an HLSL to SPIR-V smoke
-        shell: bash
-        working-directory: upstream
-        run: |
-          set -euo pipefail
-          file prefix/bin/shadercross
-          file prefix/bin/shadercross | grep -Eq 'ARM aarch64|ARM64|aarch64'
-          printf '%s\n' \
-            'float4 main(float4 position : POSITION) : SV_Position {' \
-            '    return position;' \
-            '}' > "$RUNNER_TEMP/portable.vert.hlsl"
-          LD_LIBRARY_PATH="$PWD/prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-            prefix/bin/shadercross "$RUNNER_TEMP/portable.vert.hlsl" \
-              --source HLSL --dest SPIRV --stage vertex --entrypoint main \
-              --output "$RUNNER_TEMP/portable.vert.spv"
-          test -s "$RUNNER_TEMP/portable.vert.spv"
-          file "$RUNNER_TEMP/portable.vert.spv"
-
-      - name: Normalize and inspect the release archive
-        shell: bash
-        working-directory: upstream
-        run: |
-          set -euo pipefail
-          archive=$(find build/dist -maxdepth 1 -type f -name 'SDL3_shadercross-*.tar.gz' -print -quit)
-          test -n "$archive"
-          output="$RUNNER_TEMP/Shadercross-3.0.0-e55cf5e-linux-arm64.tar.gz"
-          cp "$archive" "$output"
-          tar -tzf "$output" | grep -E '/bin/shadercross$'
-          sha256sum "$output"
+          Scripts/build-shadercross-linux-arm64.sh \
+            "$GITHUB_WORKSPACE/upstream" \
+            "${{ steps.sdl.outputs.prefix }}" \
+            "$RUNNER_TEMP"
 
       - name: Preserve the Linux ARM64 candidate
         uses: actions/upload-artifact@v4
