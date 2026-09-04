@@ -1,0 +1,126 @@
+name: Build Shadercross for Linux ARM64
+
+run-name: Build Shadercross for Linux ARM64
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shadercross-linux-arm64-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SDL_REVISION: 8e37db5e797b6167f3a00d697d816a684bd259c7
+  SHADERCROSS_REVISION: e55cf5e31ced6f3d1be5cc6d0c50e99384f9f4ba
+
+jobs:
+  linux-arm64:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+
+    steps:
+      - name: Check out the asset provenance
+        uses: actions/checkout@v6
+
+      - name: Check out the exact Shadercross source
+        uses: actions/checkout@v6
+        with:
+          repository: libsdl-org/SDL_shadercross
+          ref: ${{ env.SHADERCROSS_REVISION }}
+          path: upstream
+          submodules: recursive
+
+      - name: Verify the native ARM64 host
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$(uname -m)" in
+            aarch64|arm64) ;;
+            *) echo "expected a native ARM64 runner, got $(uname -m)" >&2; exit 1 ;;
+          esac
+
+      - name: Set up the exact SDL revision
+        id: sdl
+        uses: libsdl-org/setup-sdl@afd98199e97f9c2aa739474be7e0886d149a5e47
+        with:
+          cmake-generator: Ninja
+          discriminator: shadercross-linux-arm64
+          install-linux-dependencies: true
+          version: ${{ env.SDL_REVISION }}
+
+      - name: Install native build requirements
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y bison ninja-build patchelf
+
+      - name: Configure Shadercross
+        shell: bash
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          cmake -S . -B build -GNinja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$PWD/prefix" \
+            -DCMAKE_PREFIX_PATH="${{ steps.sdl.outputs.prefix }}" \
+            -DSDLSHADERCROSS_CLI=ON \
+            -DSDLSHADERCROSS_CLI_STATIC=OFF \
+            -DSDLSHADERCROSS_DXC=ON \
+            -DSDLSHADERCROSS_INSTALL=ON \
+            -DSDLSHADERCROSS_INSTALL_CPACK=ON \
+            -DSDLSHADERCROSS_INSTALL_RUNTIME=ON \
+            -DSDLSHADERCROSS_SHARED=ON \
+            -DSDLSHADERCROSS_STATIC=ON \
+            -DSDLSHADERCROSS_TESTS=OFF \
+            -DSDLSHADERCROSS_VENDORED=ON
+
+      - name: Build and install Shadercross
+        shell: bash
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          cmake --build build --config Release --parallel 4
+          cmake --install build --config Release
+          cmake --build build --target package --config Release
+
+      - name: Execute an HLSL to SPIR-V smoke
+        shell: bash
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          file prefix/bin/shadercross
+          file prefix/bin/shadercross | grep -Eq 'ARM aarch64|ARM64|aarch64'
+          printf '%s\n' \
+            'float4 main(float4 position : POSITION) : SV_Position {' \
+            '    return position;' \
+            '}' > "$RUNNER_TEMP/portable.vert.hlsl"
+          LD_LIBRARY_PATH="$PWD/prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+            prefix/bin/shadercross "$RUNNER_TEMP/portable.vert.hlsl" \
+              --source HLSL --dest SPIRV --stage vertex --entrypoint main \
+              --output "$RUNNER_TEMP/portable.vert.spv"
+          test -s "$RUNNER_TEMP/portable.vert.spv"
+          file "$RUNNER_TEMP/portable.vert.spv"
+
+      - name: Normalize and inspect the release archive
+        shell: bash
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          archive=$(find build/dist -maxdepth 1 -type f -name 'SDL3_shadercross-*.tar.gz' -print -quit)
+          test -n "$archive"
+          output="$RUNNER_TEMP/Shadercross-3.0.0-e55cf5e-linux-arm64.tar.gz"
+          cp "$archive" "$output"
+          tar -tzf "$output" | grep -E '/bin/shadercross$'
+          sha256sum "$output"
+
+      - name: Preserve the Linux ARM64 candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadercross-3.0.0-linux-arm64
+          path: ${{ runner.temp }}/Shadercross-3.0.0-e55cf5e-linux-arm64.tar.gz
+          retention-days: 7
+          if-no-files-found: error
