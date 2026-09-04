@@ -10,6 +10,10 @@ on:
     paths:
       - .github/workflows/shadercross-linux-arm64.yml
       - Scripts/build-shadercross-linux-arm64.sh
+      - Scripts/prepare-shadercross.sh
+      - Shadercross/Manifest.json
+      - Shadercross/RELEASE_NOTES.md
+      - README.md
 
 permissions:
   contents: read
@@ -21,6 +25,7 @@ concurrency:
 env:
   SDL_REVISION: 8e37db5e797b6167f3a00d697d816a684bd259c7
   SHADERCROSS_REVISION: e55cf5e31ced6f3d1be5cc6d0c50e99384f9f4ba
+  SHADERCROSS_SHA256: 0b1fab54e52b22f055831b7e6e5e613e1fb21c0cc38d20057d9dd065b442cfbb
 
 jobs:
   linux-arm64:
@@ -72,6 +77,8 @@ jobs:
             "$GITHUB_WORKSPACE/upstream" \
             "${{ steps.sdl.outputs.prefix }}" \
             "$RUNNER_TEMP"
+          echo "${{ env.SHADERCROSS_SHA256 }}  $RUNNER_TEMP/Shadercross-3.0.0-e55cf5e-linux-arm64.tar.gz" \
+            | sha256sum -c -
 
       - name: Preserve the Linux ARM64 candidate
         uses: actions/upload-artifact@v4

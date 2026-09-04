@@ -18,8 +18,9 @@ the standard HLSL shader source into the format selected for the GPU backend.
 - Preparation script: [`Scripts/prepare-shadercross.sh`](Scripts/prepare-shadercross.sh)
 
 The preparation script imports the packages produced by the pinned official
-SDL workflow. It verifies both the GitHub Actions artifact ZIPs and the exact
-packages extracted from them.
+SDL workflow and the native Linux arm64 package produced by this repository.
+It verifies the GitHub Actions inputs and every exact package included in the
+release candidate.
 
 ```sh
 ./Scripts/prepare-shadercross.sh /path/to/downloaded/action-artifacts
@@ -28,7 +29,7 @@ packages extracted from them.
 The resulting upload directory is ignored by Git:
 
 ```text
-.release/shadercross-3.0.0-e55cf5e-silex.2/
+.release/shadercross-3.0.0-e55cf5e-silex.3/
 ```
 
 The prepared release also contains:
