@@ -4,6 +4,9 @@ run-name: Build Shadercross for Linux ARM64
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - spec-desktop-platform-portability-06
 
 permissions:
   contents: read
