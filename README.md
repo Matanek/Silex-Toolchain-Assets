@@ -22,6 +22,11 @@ SDL workflow and the native Linux arm64 package produced by this repository.
 It verifies the GitHub Actions inputs and every exact package included in the
 release candidate.
 
+The manifest names every Silex desktop target explicitly. macOS ARM64 and x64
+share one verified universal archive, Windows ARM64 declares its use of the
+published x64 compatibility tool, and Linux keeps distinct native ARM64 and
+x64 archives.
+
 ```sh
 ./Scripts/prepare-shadercross.sh /path/to/downloaded/action-artifacts
 ```

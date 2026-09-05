@@ -14,6 +14,10 @@
         "file": "Shadercross-3.0.0-e55cf5e-macos-universal.tar.gz",
         "sha256": "a92bfbbdf10c3065976fb41d1b561a82f5c6f78203f9805aabf00b12dd517c2b"
       },
+      "macos-x64": {
+        "uses": "macos-arm64",
+        "reason": "The published macOS archive is universal and contains native ARM64 and x64 slices."
+      },
       "linux-x64": {
         "file": "Shadercross-3.0.0-e55cf5e-linux-x64.tar.gz",
         "sha256": "252de380a0a4c6b5479419be3e4f00e419805fc99a41bae840096f0708ce3e15"
